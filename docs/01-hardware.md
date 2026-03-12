@@ -19,7 +19,7 @@
 
 All pin assignments are configurable in the Web GUI without reflashing.
 
-| Signal | Default GPIO | Wemos D1 Mini label |
+| MAX7219 | Default GPIO | Wemos D1 Mini label |
 |--------|:-----------:|:-------------------:|
 | CLK | **14** | D5 |
 | CS / LOAD | **12** | D6 |
