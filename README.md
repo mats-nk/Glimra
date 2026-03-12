@@ -1,6 +1,10 @@
 # Glimra
 
-**Glimra** is firmware for **ESP32-S2** and **ESP8266** that drives a MAX7219 LED matrix display. Subscribes to MQTT topics for display text, and supports full configuration via MQTT cmd topics or a built-in Web GUI — no hardcoded credentials or filesystem upload required.
+**Glimra** is firmware for **ESP32-S2** and **ESP8266** that drives a MAX7219 LED matrix display.
+
+The main features is:
+- Display text from MQTT topics
+- Full configuration via MQTT cmd topics or a built-in Web GUI — no hardcoded credentials or filesystem upload required.
 
 🔗 **https://github.com/mats-nk/Glimra**
 
