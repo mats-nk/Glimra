@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Glimra</title>
+<style>
+/* ── Theme variables ─────────────────────────────────────────── */
+:root {
+  --bg:#0f0f1a; --card:#1a1a2e; --acc:#7c3aed; --a2:#a78bfa;
+  --tx:#e2e8f0; --mt:#94a3b8;  --bd:#2d2d4e;  --gn:#10b981;
+  --rd:#ef4444; --inp:#0a0a14; --prev:#0a0a14;
+}
+[data-theme="light"] {
+  --bg:#f0f2f5; --card:#ffffff; --acc:#6d28d9; --a2:#7c3aed;
+  --tx:#1e1e2e; --mt:#64748b;  --bd:#d1d5db;  --gn:#059669;
+  --rd:#dc2626; --inp:#f8fafc; --prev:#f1f5f9;
+}
+[data-theme="hc"] {
+  --bg:#000000; --card:#0a0a0a; --acc:#ffff00; --a2:#ffff00;
+  --tx:#ffffff; --mt:#cccccc;  --bd:#ffffff;  --gn:#00ff00;
+  --rd:#ff4444; --inp:#000000; --prev:#111111;
+}
+
+/* ── Reset & base ─────────────────────────────────────────────── */
+* { box-sizing:border-box; margin:0; padding:0 }
+body { background:var(--bg); color:var(--tx); font:15px 'Segoe UI',sans-serif; transition:background .2s,color .2s }
+
+/* ── Header ──────────────────────────────────────────────────── */
+header { background:var(--card); border-bottom:2px solid var(--bd);
+  padding:.9rem 1.5rem; display:flex; align-items:center; gap:.75rem; flex-wrap:wrap }
+.logo { font-size:1.3rem; font-weight:700; color:var(--a2) }
+#dot { width:10px; height:10px; border-radius:50%; background:var(--rd); transition:.3s; flex-shrink:0 }
+#dot.on { background:var(--gn) }
+
+/* ── Layout ──────────────────────────────────────────────────── */
+.wrap { max-width:860px; margin:1.5rem auto; padding:0 1rem; display:grid; gap:1.2rem }
+.card { background:var(--card); border:1px solid var(--bd); border-radius:10px; padding:1.3rem; transition:background .2s }
+h2 { font-size:.78rem; font-weight:600; color:var(--a2);
+  letter-spacing:.06em; margin-bottom:1rem }
+
+/* ── Form controls ───────────────────────────────────────────── */
+label { display:block; font-size:.75rem; color:var(--mt); margin-bottom:.25rem }
+input, select { width:100%; background:var(--inp); border:1px solid var(--bd);
+  border-radius:5px; padding:.45rem .65rem; color:var(--tx);
+  font-size:.88rem; outline:none; transition:border-color .15s }
+input:focus, select:focus { border-color:var(--acc) }
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:.9rem }
+.g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.9rem }
+@media(max-width:560px) { .g2,.g3 { grid-template-columns:1fr } }
+.row { display:flex; gap:.6rem; align-items:center }
+input[type="range"] { flex:1; accent-color:var(--acc) }
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn { padding:.52rem 1.2rem; border-radius:7px; border:none; cursor:pointer;
+  font-size:.85rem; font-weight:600; transition:.18s }
+.bp  { background:var(--acc); color:#fff }
+.bp:hover  { filter:brightness(1.15) }
+.bd2 { background:transparent; border:1px solid var(--rd); color:var(--rd) }
+.bd2:hover { background:var(--rd); color:#fff }
+.bg2 { background:transparent; border:1px solid var(--bd); color:var(--tx) }
+.bg2:hover { background:var(--bd) }
+.acts { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:1rem }
+
+/* ── Theme switcher pills ─────────────────────────────────────── */
+.thm { display:flex; gap:.4rem; align-items:center }
+.thm-btn { width:22px; height:22px; border-radius:50%; border:2px solid transparent;
+  cursor:pointer; transition:.15s; flex-shrink:0 }
+.thm-btn:hover { transform:scale(1.15) }
+.thm-btn.sel    { border-color:var(--tx); transform:scale(1.1) }
+#tb-dark  { background:#1a1a2e }
+#tb-light { background:#f0f2f5; border-color:#aaa }
+#tb-hc    { background:#ffcc00; border-color:#aa8800 }
+
+/* ── Tabs ─────────────────────────────────────────────────────── */
+.tabs { display:flex; gap:.4rem; border-bottom:1px solid var(--bd); margin-bottom:1.2rem; flex-wrap:wrap }
+.tab  { padding:.45rem .9rem; cursor:pointer; border-radius:5px 5px 0 0;
+  font-size:.85rem; color:var(--mt); border:1px solid transparent;
+  border-bottom:none; margin-bottom:-1px; transition:.15s }
+.tab.a { color:var(--tx); background:var(--card); border-color:var(--bd) }
+.tp { display:none } .tp.a { display:block }
+
+/* ── Message preview ─────────────────────────────────────────── */
+.prev { background:var(--prev); border:1px solid var(--bd); border-radius:7px;
+  padding:.65rem .9rem; margin-top:.7rem; min-height:2.6rem; color:var(--a2); word-break:break-all }
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.toast { position:fixed; bottom:1.2rem; right:1.2rem; background:var(--gn); color:#fff;
+  padding:.65rem 1.1rem; border-radius:7px; font-size:.85rem; opacity:0;
+  transform:translateY(16px); transition:.28s; pointer-events:none; z-index:99 }
+.toast.s { opacity:1; transform:translateY(0) }
+.toast.e { background:var(--rd) }
+</style>
+
+<!-- Apply saved theme before first paint to prevent flash -->
+<script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────── -->
+<header>
+  <span class="logo">&#9632; Glimra</span>
+  <div id="dot"></div>
+  <span id="stxt" style="font-size:.8rem;color:var(--mt)">Connecting...</span>
+  <span style="flex:1"></span>
+  <div class="thm">
+    <span style="font-size:.75rem;color:var(--mt);margin-right:.2rem">Theme:</span>
+    <div id="tb-dark"  class="thm-btn" onclick="setTheme('')"       title="Dark theme"></div>
+    <div id="tb-light" class="thm-btn" onclick="setTheme('light')"  title="Light theme"></div>
+    <div id="tb-hc"    class="thm-btn" onclick="setTheme('hc')"     title="High Contrast theme"></div>
+  </div>
+  <button class="btn bg2" onclick="resetWifi()" style="margin-left:.5rem">Reset WiFi</button>
+</header>
+
+<!-- ── Main ────────────────────────────────────────────────── -->
+<div class="wrap">
+
+  <!-- Send text -->
+  <div class="card">
+    <h2>Send Text to Glimra</h2>
+    <p style="font-size:.8rem;color:var(--mt);margin:0 0 .7rem">
+      If the message is longer than the display width, the configured animation
+      is automatically overridden and scroll is used instead to show the full message.
+    </p>
+    <div class="row">
+      <input id="lm" type="text" placeholder="Send message to display..."
+        onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="btn bp" onclick="sendMsg()">Send</button>
+    </div>
+    <div class="prev" id="pm">--</div>
+    <div style="margin-top:1rem">
+      <label>Brightness: <span id="iv">0</span> / 15</label>
+      <input type="range" id="intensity" min="0" max="15" value="0"
+        oninput="document.getElementById('iv').textContent=this.value"
+        onchange="setInt(this.value)">
+    </div>
+  </div>
+
+  <!-- Config tabs -->
+  <div class="card">
+    <div class="tabs">
+      <div class="tab a" onclick="st('mqtt',this)">MQTT</div>
+      <div class="tab"   onclick="st('disp',this)">Display</div>
+      <div class="tab"   onclick="st('anim',this)">Animation</div>
+      <div class="tab"   onclick="st('sys',this)">System</div>
+    </div>
+
+    <!-- MQTT -->
+    <div id="t-mqtt" class="tp a">
+      <div class="g2">
+        <div><label>Broker IP / Host</label><input id="mqtt_server" placeholder="192.168.1.100"></div>
+        <div><label>Port</label><input id="mqtt_port" type="number" value="1883"></div>
+        <div><label>Username</label><input id="mqtt_user" placeholder="optional"></div>
+        <div><label>Password</label><input id="mqtt_pass" type="password" placeholder="optional"></div>
+      </div>
+      <div style="margin-top:.9rem">
+        <label>Topic 1 (primary)</label><input id="mqtt_topic" value="display/text">
+        <label style="margin-top:.7rem">Topic 2 (optional)</label><input id="mqtt_topic2">
+        <label style="margin-top:.7rem">Topic 3 (optional)</label><input id="mqtt_topic3">
+      </div>
+    </div>
+
+    <!-- Display -->
+    <div id="t-disp" class="tp">
+      <div class="g3">
+        <div><label>CS / LOAD Pin</label><input id="cs_pin" type="number"></div>
+        <div><label>CLK Pin</label><input id="clk_pin" type="number"></div>
+        <div><label>DATA Pin</label><input id="data_pin" type="number"></div>
+        <div><label>Modules (daisy)</label><input id="modules" type="number" min="1" max="32"></div>
+        <div>
+          <label>Hardware Type</label>
+          <select id="hw_type">
+            <option value="0">Generic</option>
+            <option value="1">FC-16</option>
+            <option value="2">Parola</option>
+            <option value="3">ICStation</option>
+          </select>
+        </div>
+        <div>
+          <label>Rotation</label>
+          <select id="rotation">
+            <option value="0">0° (normal)</option>
+            <option value="2">180° (upside-down)</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:.8rem;display:flex;align-items:center;gap:.6rem">
+        <input id="invert" type="checkbox" style="width:auto">
+        <label style="margin:0;font-size:.85rem">Invert display</label>
+      </div>
+    </div>
+
+    <!-- Animation -->
+    <div id="t-anim" class="tp">
+      <div class="g2">
+        <div><label>Entry Effect</label><select id="anim_in"></select></div>
+        <div><label>Exit Effect</label><select id="anim_out"></select></div>
+        <div>
+          <label>Scroll Speed (ms): <span id="ssv">40</span></label>
+          <input type="range" id="scroll_speed" min="10" max="200" step="5"
+            oninput="document.getElementById('ssv').textContent=this.value">
+        </div>
+        <div>
+          <label>Pause Time (ms): <span id="ptv">2000</span></label>
+          <input type="range" id="pause_time" min="0" max="10000" step="250"
+            oninput="document.getElementById('ptv').textContent=this.value">
+        </div>
+      </div>
+    </div>
+
+    <!-- System -->
+    <div id="t-sys" class="tp">
+      <div class="g2">
+        <div><label>Hostname</label><input id="hostname" placeholder="glimra-XXXX"></div>
+      </div>
+      <div id="si" style="margin-top:.9rem;font-size:.8rem;color:var(--mt);line-height:2"></div>
+    </div>
+
+    <div class="acts">
+      <button class="btn bp"  onclick="saveCfg()">Save &amp; Apply</button>
+      <button class="btn bd2" onclick="factory()">Factory Reset</button>
+    </div>
+  </div>
+
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+var AN = {
+  0:'None',          1:'Print',
+  2:'Scroll Up',     3:'Scroll Down',
+  4:'Scroll Left',   5:'Scroll Right',
+  6:'Sprite',        7:'Slice',
+  8:'Mesh',          9:'Fade',
+ 10:'Dissolve',     11:'Blinds',
+ 12:'Random',       13:'Wipe',
+ 14:'Wipe Cursor',  15:'Opening',
+ 16:'Open Cursor',  17:'Closing',
+ 18:'Close Cursor', 19:'Up Left',
+ 20:'Up Right',     21:'Down Left',
+ 22:'Down Right',   23:'Scan Horiz',
+ 24:'Scan Vert',    25:'Grow Up',
+ 26:'Grow Down'
+};
+
+function pa() {
+  ['anim_in','anim_out'].forEach(function(id) {
+    var s = document.getElementById(id); s.innerHTML = '';
+    Object.keys(AN).forEach(function(v) {
+      var o = document.createElement('option');
+      o.value = v; o.textContent = AN[v]; s.appendChild(o);
+    });
+  });
+}
+
+function setTheme(t) {
+  if (t) document.documentElement.setAttribute('data-theme', t);
+  else    document.documentElement.removeAttribute('data-theme');
+  localStorage.setItem('theme', t);
+  updateThemeBtns();
+}
+function updateThemeBtns() {
+  var cur = document.documentElement.getAttribute('data-theme') || '';
+  document.getElementById('tb-dark').className  = 'thm-btn' + (cur === ''      ? ' sel' : '');
+  document.getElementById('tb-light').className = 'thm-btn' + (cur === 'light' ? ' sel' : '');
+  document.getElementById('tb-hc').className    = 'thm-btn' + (cur === 'hc'    ? ' sel' : '');
+}
+
+function loadCfg() {
+  fetch('/api/config').then(function(r){ return r.json(); }).then(function(c) {
+    ['hostname','mqtt_server','mqtt_port','mqtt_user','mqtt_pass',
+     'mqtt_topic','mqtt_topic2','mqtt_topic3','cs_pin','clk_pin','data_pin',
+     'modules','hw_type','rotation','intensity','scroll_speed','pause_time',
+     'anim_in','anim_out'].forEach(function(k) {
+      var e = document.getElementById(k);
+      if (e) e.value = (c[k] !== undefined) ? c[k] : '';
+    });
+    document.getElementById('invert').checked       = !!c.invert;
+    document.getElementById('iv').textContent       = c.intensity    || 4;
+    document.getElementById('ssv').textContent      = c.scroll_speed || 40;
+    document.getElementById('ptv').textContent      = c.pause_time   || 2000;
+  });
+}
+
+function poll() {
+  fetch('/api/status').then(function(r){ return r.json(); }).then(function(s) {
+    document.getElementById('dot').className        = s.mqtt_connected ? 'on' : '';
+    document.getElementById('stxt').textContent     = s.mqtt_connected ? 'MQTT Connected' : 'MQTT Offline';
+    document.getElementById('pm').textContent       = s.last_msg || '--';
+    document.getElementById('si').innerHTML         =
+      'Board: ' + s.board + ' | Chip ID: ' + s.chip_id.toUpperCase() +
+      ' | IP: ' + s.ip +
+      ' | RSSI: ' + s.rssi + ' dBm | Uptime: ' + s.uptime +
+      's | Free: ' + s.heap + ' B | Version: ' + s.version;
+  }).catch(function(){});
+  setTimeout(poll, 3000);
+}
+
+function saveCfg() {
+  var b = { invert: document.getElementById('invert').checked };
+  ['hostname','mqtt_server','mqtt_port','mqtt_user','mqtt_pass',
+   'mqtt_topic','mqtt_topic2','mqtt_topic3','cs_pin','clk_pin','data_pin',
+   'modules','hw_type','rotation','intensity','scroll_speed','pause_time',
+   'anim_in','anim_out'].forEach(function(k) {
+    var e = document.getElementById(k);
+    if (e) { var v = e.value; b[k] = (v !== '' && !isNaN(v)) ? Number(v) : v; }
+  });
+  fetch('/api/config', { method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify(b) })
+    .then(function(r){ toast(r.ok ? 'Saved!' : 'Error', !r.ok); });
+}
+
+function sendMsg() {
+  var v = document.getElementById('lm').value; if (!v) return;
+  fetch('/api/message', { method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify({msg:v}) });
+  document.getElementById('pm').textContent = v;
+  document.getElementById('lm').value = '';
+}
+
+function setInt(v) {
+  fetch('/api/intensity', { method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify({value:Number(v)}) });
+}
+
+function resetWifi() {
+  if (!confirm('Reset WiFi and reboot?')) return;
+  fetch('/api/resetwifi', {method:'POST'}); toast('Rebooting...');
+}
+function factory() {
+  if (!confirm('Erase all config?')) return;
+  fetch('/api/factory', {method:'POST'}); toast('Rebooting...');
+}
+
+function st(n, el) {
+  document.querySelectorAll('.tp').forEach(function(p){ p.classList.remove('a'); });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('a'); });
+  document.getElementById('t-'+n).classList.add('a'); el.classList.add('a');
+}
+
+function toast(m, e) {
+  var t = document.getElementById('toast');
+  t.textContent = m; t.className = 'toast' + (e ? ' e' : '');
+  setTimeout(function(){ t.classList.add('s'); }, 10);
+  setTimeout(function(){ t.classList.remove('s'); }, 2800);
+}
+
+pa(); updateThemeBtns(); loadCfg(); poll();
+</script>
+<footer style="text-align:center;padding:1rem 0 1.5rem;font-size:.75rem;color:var(--mt)">
+  <a href="https://github.com/mats-nk/Glimra" target="_blank"
+     style="color:var(--mt);text-decoration:none">
+    Glimra — https://github.com/mats-nk/Glimra
+  </a>
+  &nbsp;|&nbsp; GPL-3.0 © 2026 Mats Nils Karlsson
+</footer>
+</body>
+</html>
